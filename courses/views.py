@@ -57,3 +57,6 @@ class CoursesByCategoryListView(ListView):
         context['category'] = category
         context['categories'] = Category.objects.all()
         return context
+
+
+

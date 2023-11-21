@@ -1,6 +1,7 @@
 from django.contrib import messages, auth
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, Http404
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 # Create your views here.
 from django.urls import reverse_lazy
@@ -11,6 +12,8 @@ from courses.models import Category, Lesson, Course
 from udemy.models import Enroll
 from .models import User
 from .forms import UserRegistrationForm, UserLoginForm, ProfileUpdateForm
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class RegisterView(CreateView):
@@ -65,25 +68,44 @@ class LoginView(FormView):
     def get_form_class(self):
         return self.form_class
 
-    def form_valid(self, form):
-        auth.login(self.request, form.get_user())
+    # def form_valid(self, form):
+    #     auth.login(self.request, form.get_user())
 
-        return HttpResponseRedirect(self.get_success_url())
-        # return super(Login, self).form_valid(form)
+    #     return HttpResponseRedirect(self.get_success_url())
+    #     # return super(Login, self).form_valid(form)
 
     def form_invalid(self, form):
         """If the form is invalid, render the invalid form."""
         return self.render_to_response(self.get_context_data(form=form))
+    
+    def form_valid(self, form):
+        user = form.get_user()
+        auth.login(self.request, user)
+
+        # Generate JWT token
+        refresh = RefreshToken.for_user(user)
+        token = str(refresh.access_token)
+
+        # Attach the token to the response
+        response = super().form_valid(form)
+        response.set_cookie('access_token', token, httponly=True)
+
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class LogoutView(RedirectView):
     """
     Provides users the ability to logout
     """
-    url = '/login'
+    url = '/login'   
 
     def get(self, request, *args, **kwargs):
         auth.logout(request)
+
+        # Delete the JWT token cookie
+        response = super().get(request, *args, **kwargs)
+        response.delete_cookie('access_token')
+
         messages.success(request, 'You are now logged out')
         return super(LogoutView, self).get(request, *args, **kwargs)
 

@@ -12,6 +12,7 @@
                              aria-labelledby="" data-parent="#accordionExample">
                             <div class="card-body" style="padding:0;">
                                 <table style="width: 100%;">
+                                    
 
                                     {% for lesson in lessons %}
 
@@ -33,16 +34,22 @@
                                     {% endfor %}
                                 </table>
                             </div>
+                            
                         </div>
+                        <button id="quiz-button" style="background-color: #007BFF; color: #fff; border: none; border-radius: 5px; padding: 10px 20px; font-size: 16px; cursor: pointer; transition: background-color 0.2s; ">Take Quiz</button>
+                        <script>
+                            document.getElementById('quiz-button').addEventListener('click', function() {
+                                window.location.href = "{% url 'question-list' %}";
+                            })
+                        </script>
                     </div>
                 </div>
             </div>
             <div class="col-lg-9" id="video_player_area">
                 <div class="" style="background-color: #333;">
                     <div class="embed-responsive embed-responsive-16by9">
-                        <iframe width="100%" height="500" class="embed-responsive-item"
-                                src="https://www.youtube.com/embed/Kyx2PsuwomE" frameborder="0"
-                                allowfullscreen>
+                        <iframe width="560" height="315" src="https://www.youtube.com/embed/3WI9RZODuag?si=pEQdC2erhmqgpuL7" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
                         </iframe>
                     </div>
                 </div>

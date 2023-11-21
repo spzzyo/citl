@@ -26,6 +26,10 @@ INSTALLED_APPS = [
     'udemy',
     'courses',
     'cart',
+    'stocks',
+    'quiz',
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -38,6 +42,20 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
+
+
+    
+REST_FRAMEWORK = { 
+    'DEFAULT_AUTHENTICATION_CLASSES': [ 
+        'rest_framework_simplejwt.authentication.JWTAuthentication', 
+    ], 
+} 
+    
+
+SIMPLE_JWT = {
+    'AUTH_HEADER_TYPES': ('JWT',),
+}
+
 
 ROOT_URLCONF = 'udemyclone.urls'
 

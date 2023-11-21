@@ -4,63 +4,96 @@
 {% load humanize %}
 
 {% block content %}
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 
-    <section class="home-banner-area" style="background-image: url({% static 'images/learning.jpg' %})">
+    <section class="home-banner-area" style="background-image: url({% static 'images/background.jpg' %})">
         <div class="container-lg">
             <div class="row">
                 <div class="col">
                     <div class="home-banner-wrap">
                         <h2>Best place for learning</h2>
                         <p>Learn from any topic, choose from category</p>
-                        <form class="" action="{% url 'udemy:search' %}" method="get">
-                            <div class="input-group">
-                                <input type="text" class="form-control" name="q"
-                                       placeholder="what do you want to learn?">
-                                <div class="input-group-append">
-                                    <button class="btn" type="submit"><i class="fas fa-search"></i></button>
-                                </div>
-                            </div>
-                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-    <section class="home-fact-area">
-        <div class="container-lg">
-            <div class="row">
-                <div class="col-md-4 d-flex">
-                    <div class="home-fact-box mr-md-auto ml-auto mr-auto">
-                        <i class="fas fa-bullseye float-left"></i>
-                        <div class="text-box">
-                            <h4>{{ courses.count }} online courses</h4>
-                            <p>Explore A Variety Of Fresh Topics</p>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="col-md-4 d-flex">
-                    <div class="home-fact-box mr-md-auto ml-auto mr-auto">
-                        <i class="fa fa-check float-left"></i>
-                        <div class="text-box">
-                            <h4>Expert Instruction</h4>
-                            <p>Find The Right Course For You</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-4 d-flex">
-                    <div class="home-fact-box mr-md-auto ml-auto mr-auto">
-                        <i class="fa fa-clock float-left"></i>
-                        <div class="text-box">
-                            <h4>Lifetime Access</h4>
-                            <p>Learn On Your Schedule</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <section class="stock-chart" style="background-color: #ffffff; max-width: 600px; margin: 20px auto; padding: 20px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); border-radius: 5px; text-align: center;">
+        <h1 style="font-size: 24px; margin: 0 0 20px; color: #333;">Learn about your favorite Stocks here</h1>
+        <div class="stock-form" style="display: flex; flex-direction: column; align-items: center;">
+            <label for="ticker-input" style="font-size: 16px; margin-bottom: 10px; color: #555;">Enter Stock Ticker:</label>
+            <input type="text" id="ticker-input" placeholder="e.g., AAPL" style="width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 10px;">
+            <button id="submit-button" style="background-color: #007BFF; color: #fff; border: none; border-radius: 5px; padding: 10px 20px; font-size: 16px; cursor: pointer; transition: background-color 0.2s;">Submit</button>
         </div>
+        <div id="stock-info" style="margin-top: 20px; text-align: left;">
+            <div id="stock-info-content"></div>
+        </div>
+        <div id="chart-container" style="margin-top: 20px; display: flex; justify-content: center; align-items: center;"></div>
+        <script>
+            const chartContainer = document.getElementById('chart-container');
+            let chart = null;  // Store the chart object
+    
+            document.getElementById('submit-button').addEventListener('click', function () {
+                const ticker = document.getElementById('ticker-input').value;
+    
+                // Remove the previous chart and stock info if they exist
+                if (chart) {
+                    chart.remove();
+                }
+                const stockInfoDiv = document.getElementById('stock-info-content');
+                stockInfoDiv.innerHTML = '';
+    
+                chart = LightweightCharts.createChart(chartContainer, { width: 550, height: 500 });
+    
+                fetch(`/stocks/get_historic_data/${ticker}/`)  // Replace with your actual URL and use the ticker input
+                    .then(response => response.json())
+                    .then(data => {
+                        const candlestickSeries = chart.addCandlestickSeries({
+                            upColor: '#26a69a', downColor: '#ef5350', borderVisible: false,
+                            wickUpColor: '#26a69a', wickDownColor: '#ef5350',
+                        });
+    
+                        // Process the JSON data and set it as the data for the candlestickSeries
+                        const formattedData = data.map(item => ({
+                            time: item.time,
+                            open: item.open,
+                            high: item.high,
+                            low: item.low,
+                            close: item.close,
+                        }));
+                        candlestickSeries.setData(formattedData);
+    
+                        chart.timeScale().fitContent();
+                    })
+                    .catch(error => {
+                        console.error('Error fetching financial data:', error);
+                    });
+    
+                // Fetch and display stock information
+                fetch(`/stocks/stockinfo/${ticker}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const stockInfoContent = document.getElementById('stock-info-content');
+                        const stockInfo = `
+                            <p><strong>Company Name:</strong> ${data['Company Name']}</p>
+                            <p><strong>Symbol:</strong> ${data['Symbol']}</p>
+                            <p><strong>Market Cap:</strong> ${data['Market Cap']}</p>
+                            <p><strong>PE Ratio:</strong> ${data['PE Ratio']}</p>
+                            <p><strong>Dividend Yield:</strong> ${data['Dividend Yield']}</p>
+                        `;
+                        stockInfoContent.innerHTML = stockInfo;
+                    })
+                    .catch(error => {
+                        console.error('Error fetching stock info:', error);
+                    });
+            });
+        </script>
+        
     </section>
+    
+    
+
 
     <section class="course-carousel-area">
         <div class="container-lg">
